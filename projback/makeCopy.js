@@ -27,6 +27,7 @@ async function makeCopy(id = fileID){
         const response = await drive.files.copy({
             fileId : id
         })
+        console.log("made the API request")
         const url  = ("https://docs.google.com/spreadsheets/d/" + response.data.id);
         console.log(url);
 

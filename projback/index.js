@@ -51,8 +51,8 @@ const projectSchema = new mongoose.Schema({
 
 const task1 = {
   type : "task", //type of schema
-  project : "60b4b4766678935ba0bed0ac",  //_id if the project
-  member : "60b4b673af3ac73c8cb623ef" , // _id of the string
+  project : "60b82acacad91a4604502c8b",  //_id if the project
+  member : "60b82b5d7f24f91b845e3474" , // _id of the string
   heading : "Task 1", // heading of the task
   description : "This is a task description, pleaase do the task on time", // description of the task
   assigned : "21/5/21", // assigned date
@@ -63,8 +63,8 @@ const task1 = {
 
 const task2 = {
   type : "task", //type of schema
-  project : "60b4b4766678935ba0bed0ac",  //_id if the project
-  member : "60b4b673af3ac73c8cb623ef" , // _id of the string
+  project : "60b82acacad91a4604502c8b",  //_id if the project
+  member : "60b82b5d7f24f91b845e3473" , // _id of the string
   heading : "Task 2", // heading of the task
   description : "This is a task description, pleaase do the task on time", // description of the task
   assigned : "21/5/21", // assigned date
@@ -75,8 +75,8 @@ const task2 = {
 
 const task3 = {
   type : "task", //type of schema
-  project : "60b4b4766678935ba0bed0ab",  //_id if the project
-  member : "60b5a508ca41dc27b87182d0" , // _id of the string
+  project : "60b82acdcad91a4604502c8c",  //_id if the project
+  member : "60b82b5d7f24f91b845e3475" , // _id of the string
   heading : "Task 3", // heading of the task
   description : "This is a task description, pleaase do the task on time", // description of the task
   assigned : "21/5/21", // assigned date
@@ -87,7 +87,7 @@ const task3 = {
 
 const member1 = {
   type : "member", // type of addition
-  project : "60b4b4766678935ba0bed0ac", //project id
+  project : "60b82acacad91a4604502c8b", //project id
   name : "Diana",  // name of member
   // working : [projectSchema],
   email : "testemail@test.com", // email of member
@@ -98,7 +98,7 @@ const member1 = {
 
 const member2 = {
   type : "member", // type of addition
-  project : "60b4b4766678935ba0bed0ac", //project id
+  project : "60b82acacad91a4604502c8b", //project id
   name : "John",  // name of member
   // working : [projectSchema],
   email : "testemail@test.com", // email of member
@@ -108,7 +108,7 @@ const member2 = {
 }
 const member3 = {
   type : "member", // type of addition
-  project : "60b4b4766678935ba0bed0ab", //project id
+  project : "60b82acdcad91a4604502c8c", //project id
   name : "Morgan",  // name of member
   // working : [projectSchema],
   email : "testemail@test.com", // email of member
@@ -176,8 +176,9 @@ async function saveNewProject(obj){
       status : obj.status,
     });
     
-    
+    // console.log(project);
     project.save();
+  
   }catch(err){
     console.log("error hai");
 
@@ -196,6 +197,7 @@ function AddMemberToProject(member , obj){
   Project.find({_id : obj.project} , function(err, project){
     console.log(project[0].members);
     project[0].members.push(member);
+    // console.log(project[0].members)
     project[0].save();
   } )
 }
@@ -222,11 +224,39 @@ function AddTaskToMember(task , obj){
 }
 
 function saveNewCheckpoint(obj){
+  console.log(obj)
   Project.find({_id : obj.project} , function(err, project){
     project[0].checkpoints.push(obj.checkpoint);
     project[0].save();
   } )
 }
+
+function AddCheckPoints(){
+  let list = [
+    "This is task 1 , you have to do it",
+    "this is task 2 , you have to do it",
+    "this is Task 3 , you have to do it"
+  ]
+  Project.find({} , function(err , projects){
+    projects.forEach((project)=>{
+      list.forEach((item)=>{
+        console.log(project.checkpoints)
+        project.checkpoints.push(item);
+        console.log(item)
+        
+      })
+      project.save()
+    })
+    
+
+    
+    
+  })
+  console.log("done")
+
+}
+
+
 
 
 // saveNewProject(project1)
@@ -257,39 +287,114 @@ app.get("/api" , function(req , res){
     res.send( "The API is now connected");
 })
 
-app.post("/data" , function(req , res ){
-  console.log(req.body.data);
+app.post("/data/:type" , function(req , res ){
+  
   const data = req.body.data;
+  const type = req.params.type;
+  console.log("req to /data")
+  console.log(req.params)
 
-  if(data.type == "member"){
+  if(type == "member"){
     saveNewMember(data)
-  }else if(data.type == "project"){
+  }else if(type == "project"){
     saveNewProject(data)
-  }else if(data.type == "task"){
+  }else if(type == "task"){
     saveNewTask(data)
-  }else if(data.type == "checkpoint"){
+  }else if(type == "checkpoint"){
     saveNewCheckpoint(data);
   }
   
 })
 
 app.get("/projects" , function(req , res){
+  console.log("request made to /project" + req.body);
+  var list = [];
+  Project.find({} , function(err , project){
+  
+    project.forEach((proj)=>{
+      
+      const stuff = {
+        name : proj.name,
+        org : proj.org,
+        status : proj.status,
+        _id : proj._id
+        
+      }
+      
+      list.push(stuff);
+      
+
+    })
+    res.send(list)
+    
+  })
+  
+  
+
 
 })
 
-app.get("/members" , function(req , res){
+app.get("/members/:id" , function(req , res){
+  console.log("GET request to /members")
+  
+  const _id = req.params.id
+
+  var list = []
+  Project.find({_id : _id} , function(err , project){
+    if(err){
+      console.log(err);
+    }else{
+      const link = project[0].link
+      const checkpoints = project[0].checkpoints;
+      console.log(checkpoints)
+      project[0].members.forEach((member)=>{
+        const stuff = {
+          name : member.name,
+          role : member.role,
+          email : member.email,
+          _id : member._id
+        }
+        list.push(stuff)
+      })
+      res.send({list : list , link : link , checkpoints : checkpoints});
+    }
+  })
 
 })
 
 app.get("/checkpoints" , function(req, res){
-
+  console.log("request made to /checkpints" + req);
 })
 
-app.get("/tasks" , function(req , res){
-
+app.get("/tasks/:project/:member" , function(req , res){
+  console.log("request made to /tasks");
+  console.log(req.params)
+  const toSend = []
+  Project.find({_id : req.params.project} , function(err , projects){
+    projects[0].members.forEach((member)=>{
+      if(member._id == req.params.member){
+          member.tasks.forEach((task)=>{
+            const stuff = {
+              heading : task.heading,
+              description : task.description,
+              assigned : task.assigned,
+              deadline : task.deadline,
+              urgent : task.urgent
+            }
+            toSend.push(stuff);
+          })
+      }
+    })
+    res.send(toSend);
+    console.log(toSend)
+  })
 })
 
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 })
+
+
+
+// AddCheckPoints()
